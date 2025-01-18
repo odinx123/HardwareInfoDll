@@ -1,0 +1,5 @@
+D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net5.0\testdll.csproj.AssemblyReference.cache
+D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net5.0\testdll.GeneratedMSBuildEditorConfig.editorconfig
+D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net5.0\testdll.AssemblyInfoInputs.cache
+D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net5.0\testdll.AssemblyInfo.cs
+D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net5.0\testdll.csproj.CoreCompileInputs.cache

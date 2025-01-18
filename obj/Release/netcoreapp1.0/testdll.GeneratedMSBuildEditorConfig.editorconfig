@@ -1,0 +1,8 @@
+is_global = true
+build_property.RootNamespace = testdll
+build_property.ProjectDir = D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.CsWinRTUseWindowsUIXamlProjections = false
+build_property.EffectiveAnalysisLevelStyle = 
+build_property.EnableCodeStyleSeverity = 
