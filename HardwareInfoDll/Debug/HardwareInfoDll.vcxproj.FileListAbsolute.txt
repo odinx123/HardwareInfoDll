@@ -1,2 +1,0 @@
-D:\Programming\company\hardInfo\getHardwareInfoCpp\HardwareInfoDll\Debug\HardwareInfoDll.vcxproj.AssemblyReference.cache
-D:\Programming\company\hardInfo\getHardwareInfoCpp\HardwareInfoDll\Debug\Hardware.8D33913E.Up2Date

@@ -1,4 +1,0 @@
-D:\Programming\company\hardInfo\getHardwareInfoCpp\HardwareInfoDll\x64\Release\HardwareInfoDll.vcxproj.AssemblyReference.cache
-D:\Programming\company\hardInfo\getHardwareInfoCpp\HardwareInfoDll\x64\Release\Hardware.8D33913E.Up2Date
-D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\HardwareInfoDll\x64\Release\HardwareInfoDll.vcxproj.AssemblyReference.cache
-D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\HardwareInfoDll\x64\Release\Hardware.8D33913E.Up2Date
