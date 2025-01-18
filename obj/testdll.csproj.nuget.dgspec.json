@@ -4,11 +4,11 @@
     "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\testdll\\testdll.csproj": {}
   },
   "projects": {
-    "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\HardwareInfoDll\\HardwareInfoDll.vcxproj": {
+    "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\testdll\\HardwareInfoDll\\HardwareInfoDll.vcxproj": {
       "restore": {
-        "projectUniqueName": "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\HardwareInfoDll\\HardwareInfoDll.vcxproj",
+        "projectUniqueName": "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\testdll\\HardwareInfoDll\\HardwareInfoDll.vcxproj",
         "projectName": "HardwareInfoDll",
-        "projectPath": "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\HardwareInfoDll\\HardwareInfoDll.vcxproj",
+        "projectPath": "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\testdll\\HardwareInfoDll\\HardwareInfoDll.vcxproj",
         "UsingMicrosoftNETSdk": false,
         "frameworks": {
           "native": {
@@ -48,8 +48,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\HardwareInfoDll\\HardwareInfoDll.vcxproj": {
-                "projectPath": "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\HardwareInfoDll\\HardwareInfoDll.vcxproj"
+              "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\testdll\\HardwareInfoDll\\HardwareInfoDll.vcxproj": {
+                "projectPath": "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\testdll\\HardwareInfoDll\\HardwareInfoDll.vcxproj"
               }
             }
           }

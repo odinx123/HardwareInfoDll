@@ -1,7 +1,3 @@
-D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.GeneratedMSBuildEditorConfig.editorconfig
-D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.AssemblyInfoInputs.cache
-D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.AssemblyInfo.cs
-D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.csproj.CoreCompileInputs.cache
 D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\bin\Release\net8.0\testdll.exe
 D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\bin\Release\net8.0\testdll.deps.json
 D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\bin\Release\net8.0\testdll.runtimeconfig.json
@@ -11,6 +7,11 @@ D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\bin\Release\net8.0\Ha
 D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\bin\Release\net8.0\LibreHardwareMonitorLib.dll
 D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\bin\Release\net8.0\HardwareInfoDll.pdb
 D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.csproj.AssemblyReference.cache
+D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.GeneratedMSBuildEditorConfig.editorconfig
+D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.AssemblyInfoInputs.cache
+D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.AssemblyInfo.cs
+D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.csproj.CoreCompileInputs.cache
+D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.sourcelink.json
 D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.csproj.Up2Date
 D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\testdll.dll
 D:\Programming\company\hardInfo\getHardwareInfoCpp\testdll\obj\Release\net8.0\refint\testdll.dll

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("testdll")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+79a8a09f2fa72894ddb88f73140edef6dbcf51f3")]
 [assembly: System.Reflection.AssemblyProductAttribute("testdll")]
 [assembly: System.Reflection.AssemblyTitleAttribute("testdll")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

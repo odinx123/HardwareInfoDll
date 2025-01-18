@@ -5,7 +5,7 @@ VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testdll", "testdll.csproj", "{7E0C1FE7-F9D1-45E7-9AF5-58016F4AD31A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HardwareInfoDll", "..\HardwareInfoDll\HardwareInfoDll.vcxproj", "{99388D87-67CB-4E9A-ABED-76D33DFC99C4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HardwareInfoDll", "HardwareInfoDll\HardwareInfoDll.vcxproj", "{99388D87-67CB-4E9A-ABED-76D33DFC99C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

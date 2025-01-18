@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HardwareInfoDll\HardwareInfoDll.vcxproj" />
+    <ProjectReference Include="HardwareInfoDll\HardwareInfoDll.vcxproj" />
   </ItemGroup>
 
 </Project>

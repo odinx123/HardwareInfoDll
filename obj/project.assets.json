@@ -16,8 +16,8 @@
   "libraries": {
     "HardwareInfoDll/1.0.0": {
       "type": "project",
-      "path": "../HardwareInfoDll/HardwareInfoDll.vcxproj",
-      "msbuildProject": "../HardwareInfoDll/HardwareInfoDll.vcxproj"
+      "path": "HardwareInfoDll/HardwareInfoDll.vcxproj",
+      "msbuildProject": "HardwareInfoDll/HardwareInfoDll.vcxproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -57,8 +57,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\HardwareInfoDll\\HardwareInfoDll.vcxproj": {
-              "projectPath": "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\HardwareInfoDll\\HardwareInfoDll.vcxproj"
+            "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\testdll\\HardwareInfoDll\\HardwareInfoDll.vcxproj": {
+              "projectPath": "D:\\Programming\\company\\hardInfo\\getHardwareInfoCpp\\testdll\\HardwareInfoDll\\HardwareInfoDll.vcxproj"
             }
           }
         }
