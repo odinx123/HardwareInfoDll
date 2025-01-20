@@ -14,18 +14,20 @@ namespace CPUInfoApp
             // 開始計時
 
             // 呼叫 GetCPUInfo 方法並輸出結果
-            long cnt = 0;
-            for (int i = 0; i < 100; i++)
-            {
-                Stopwatch stopwatch = Stopwatch.StartNew();
-                string cpuInfo = hardwareInfo.GetCPUInfo();
-                cnt += stopwatch.ElapsedMilliseconds;
-                stopwatch.Stop();
-            }
+            //long cnt = 0;
+            //for (int i = 0; i < 100; i++)
+            //{
+            //    Stopwatch stopwatch = Stopwatch.StartNew();
+            //    string cpuInfo = hardwareInfo.GetCPUInfo();
+            //    cnt += stopwatch.ElapsedMilliseconds;
+            //    stopwatch.Stop();
+            //}
             //Console.WriteLine("CPU Name: " + cpuInfo);
 
             // 停止計時並顯示執行時間
-            Console.WriteLine("Execution Time: " + cnt/100.0 + " ms");
+            //Console.WriteLine("Execution Time: " + cnt/100.0 + " ms");
+
+            hardwareInfo.SaveAllHardware();
         }
     }
 }

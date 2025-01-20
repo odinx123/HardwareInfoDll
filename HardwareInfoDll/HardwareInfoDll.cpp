@@ -2,6 +2,8 @@
 
 #include "HardwareInfoDll.h"
 
+#include <iostream>
+
 #include <string>
 #include <nlohmann/json.hpp>
 #include <unordered_map>
@@ -16,37 +18,44 @@ using json = nlohmann::json;
 #define MAX_CORE_NUM 64
 
 namespace HardwareInfoDll {
-    // 定義 CPU 資訊結構
-    struct CPUInfoDetailed {
-        std::string Name;
-        float CPUUsage = 0.0;
-        float MaxCoreUsage = 0.0;
-        std::unordered_map<std::string, float> CoreLoad;
-        std::unordered_map<std::string, float> CoreTemperature;
-        std::unordered_map<std::string, float> CoreVoltage;
-        std::unordered_map<std::string, float> CoreClock;
-        float MaxTemperature = 0.0;
-        float PackageTemperature = 0.0;
-        float AverageTemperature = 0.0;
-        float BusSpeed = 0.0;
-        float CPUVoltage = 0.0;
-        float PackagePower = 0.0;
-        float CoresPower = 0.0;
-        int Cores = 0;
-        int Threads = 0;
-    };
+    void HardwareInfo::SaveAllHardware() {
+        // 遍歷所有硬體
+        for (int i = 0; i < this->computer->Hardware->Count; i++) {
+            IHardware^ hardware = this->computer->Hardware[i];
+            hardware->Update();
+
+            // 遍歷所有傳感器
+            for each(ISensor ^ sensor in hardware->Sensors) {
+                auto sensorValue = sensor->Value;
+                if (!sensorValue.HasValue) continue;
+
+                std::string sensorName = msclr::interop::marshal_as<std::string>(sensor->Name);
+                std::string hardwareName = msclr::interop::marshal_as<std::string>(hardware->Name);
+
+                // 格式化字串
+                System::String^ formattedString = System::String::Format(
+                    "Hardware: {0}, HardwareType: {1}, Sensor: {2}, Value: {3}, Type: {4}",
+                    gcnew System::String(hardwareName.c_str()),
+                    hardware->HardwareType.ToString(),
+                    gcnew System::String(sensorName.c_str()),
+                    sensorValue.Value.ToString(),
+                    sensor->SensorType.ToString());
+
+                // 輸出格式化後的字串
+                System::Console::WriteLine(formattedString);
+            }
+        }
+    }
 
     // 轉換 CPU 資訊結構為 JSON 格式
     System::String^ HardwareInfo::GetCPUInfo() {
-        CPUInfoDetailed cpuInfo;
-
         // 遍歷所有硬體
         for (int i = 0; i < this->computer->Hardware->Count; i++) {
             IHardware^ hardware = this->computer->Hardware[i];
             if (hardware->HardwareType == HardwareType::Cpu) {
                 hardware->Update();
 
-                cpuInfo.Name = msclr::interop::marshal_as<std::string>(hardware->Name);
+                cpuInfo->Name = msclr::interop::marshal_as<std::string>(hardware->Name);
 
                 for each(ISensor ^ sensor in hardware->Sensors) {
                     auto sensorValue = sensor->Value;
@@ -58,43 +67,43 @@ namespace HardwareInfoDll {
                     switch (sensor->SensorType) {
                         case SensorType::Load:
                             if (sensorName == "CPU Total")
-                                cpuInfo.CPUUsage = sensorValue.Value;
+                                cpuInfo->CPUUsage = sensorValue.Value;
                             else if (sensorName.find("CPU Core Max") == 0)
-                                cpuInfo.MaxCoreUsage = sensorValue.Value;
+                                cpuInfo->MaxCoreUsage = sensorValue.Value;
                             else if (sensorName.find("CPU Core") == 0)
-                                cpuInfo.CoreLoad[sensorName] = sensorValue.Value;
+                                cpuInfo->CoreLoad[sensorName] = sensorValue.Value;
                             break;
 
                         case SensorType::Temperature:
                             if (sensorName == "Core Max")
-                                cpuInfo.MaxTemperature = sensorValue.Value;
+                                cpuInfo->MaxTemperature = sensorValue.Value;
                             else if (sensorName == "CPU Package")
-                                cpuInfo.PackageTemperature = sensorValue.Value;
+                                cpuInfo->PackageTemperature = sensorValue.Value;
                             else if (sensorName == "Core Average")
-                                cpuInfo.AverageTemperature = sensorValue.Value;
+                                cpuInfo->AverageTemperature = sensorValue.Value;
                             else if (sensorName.find("CPU Core") == 0)
-                                cpuInfo.CoreTemperature[sensorName] = sensorValue.Value;
+                                cpuInfo->CoreTemperature[sensorName] = sensorValue.Value;
                             break;
 
                         case SensorType::Clock:
                             if (sensorName.find("CPU Core") == 0)
-                                cpuInfo.CoreClock[sensorName] = sensorValue.Value;
+                                cpuInfo->CoreClock[sensorName] = sensorValue.Value;
                             else if (sensorName == "Bus Speed")
-                                cpuInfo.BusSpeed = sensorValue.Value;
+                                cpuInfo->BusSpeed = sensorValue.Value;
                             break;
 
                         case SensorType::Voltage:
                             if (sensorName.find("CPU Core #") == 0)
-                                cpuInfo.CoreVoltage[sensorName] = sensorValue.Value;
+                                cpuInfo->CoreVoltage[sensorName] = sensorValue.Value;
                             else if (sensorName == "CPU Core")
-                                cpuInfo.CPUVoltage = sensorValue.Value;
+                                cpuInfo->CPUVoltage = sensorValue.Value;
                             break;
 
                         case SensorType::Power:
                             if (sensorName == "CPU Package")
-                                cpuInfo.PackagePower = sensorValue.Value;
+                                cpuInfo->PackagePower = sensorValue.Value;
                             else if (sensorName == "CPU Cores")
-                                cpuInfo.CoresPower = sensorValue.Value;
+                                cpuInfo->CoresPower = sensorValue.Value;
                             break;
                     }
                 }
@@ -102,7 +111,7 @@ namespace HardwareInfoDll {
                 //static const std::regex corePattern("CPU Core #(\\d+)", std::regex_constants::optimize); // 正則表達式來匹配核心編號
                 std::bitset<MAX_CORE_NUM> coreExists;
 
-                for (const auto& pair : cpuInfo.CoreLoad) {
+                for (const auto& pair : cpuInfo->CoreLoad) {
                     //std::smatch match;
                     if (pair.first.find("CPU Core #") == 0) { // rfind 位置為 0 表示前綴匹配
                         int coreNumber = std::stoi(pair.first.substr(10)); // 從固定位置擷取數字部分
@@ -112,33 +121,32 @@ namespace HardwareInfoDll {
                     }
                 }
 
-                cpuInfo.Cores = static_cast<int>(coreExists.count());
-                cpuInfo.Threads = static_cast<int>(cpuInfo.CoreLoad.size()); // 執行緒數量可以直接使用 CoreLoad 的大小
+                cpuInfo->Cores = static_cast<int>(coreExists.count());
+                cpuInfo->Threads = static_cast<int>(cpuInfo->CoreLoad.size()); // 執行緒數量可以直接使用 CoreLoad 的大小
             }
         }
 
         // 轉換為 JSON 格式
         json result;
-        result["Name"] = cpuInfo.Name;
-        result["CPUUsage"] = cpuInfo.CPUUsage;
-        result["MaxCoreUsage"] = cpuInfo.MaxCoreUsage;
-        result["CoreLoad"] = cpuInfo.CoreLoad;
-        result["CoreTemperature"] = cpuInfo.CoreTemperature;
-        result["CoreVoltage"] = cpuInfo.CoreVoltage;
-        result["CoreClock"] = cpuInfo.CoreClock;
-        result["MaxTemperature"] = cpuInfo.MaxTemperature;
-        result["PackageTemperature"] = cpuInfo.PackageTemperature;
-        result["AverageTemperature"] = cpuInfo.AverageTemperature;
-        result["BusSpeed"] = cpuInfo.BusSpeed;
-        result["CPUVoltage"] = cpuInfo.CPUVoltage;
-        result["PackagePower"] = cpuInfo.PackagePower;
-        result["CoresPower"] = cpuInfo.CoresPower;
-        result["Cores"] = cpuInfo.Cores;
-        result["Threads"] = cpuInfo.Threads;
+        result["Name"] = cpuInfo->Name;
+        result["CPUUsage"] = cpuInfo->CPUUsage;
+        result["MaxCoreUsage"] = cpuInfo->MaxCoreUsage;
+        result["CoreLoad"] = cpuInfo->CoreLoad;
+        result["CoreTemperature"] = cpuInfo->CoreTemperature;
+        result["CoreVoltage"] = cpuInfo->CoreVoltage;
+        result["CoreClock"] = cpuInfo->CoreClock;
+        result["MaxTemperature"] = cpuInfo->MaxTemperature;
+        result["PackageTemperature"] = cpuInfo->PackageTemperature;
+        result["AverageTemperature"] = cpuInfo->AverageTemperature;
+        result["BusSpeed"] = cpuInfo->BusSpeed;
+        result["CPUVoltage"] = cpuInfo->CPUVoltage;
+        result["PackagePower"] = cpuInfo->PackagePower;
+        result["CoresPower"] = cpuInfo->CoresPower;
+        result["Cores"] = cpuInfo->Cores;
+        result["Threads"] = cpuInfo->Threads;
 
         // 將 JSON 資料轉換成 std::string，再轉成 System::String^
         std::string jsonStr = result.dump(4);
         return msclr::interop::marshal_as<System::String^>(jsonStr);
-        //return gcnew String(jsonStr.c_str());
     }
 }
