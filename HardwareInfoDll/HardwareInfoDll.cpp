@@ -19,7 +19,7 @@ using json = nlohmann::json;
 
 namespace HardwareInfoDll {
     using HardwareHandler = void(*)(IHardware^, HardwareInfo^);
-    
+
     // ﹚竡祑砰矪瞶ㄧ计
     void HandleCPU(IHardware^ hardware, HardwareInfo^ hw) {
         hw->cpuInfo->Name = msclr::interop::marshal_as<std::string>(hardware->Name);
@@ -74,6 +74,19 @@ namespace HardwareInfoDll {
                     break;
             }
         }
+
+        std::bitset<MAX_CORE_NUM> coreExists;
+
+        for (const auto& pair : hw->cpuInfo->CoreLoad) {
+            //std::smatch match;
+            if (pair.first.find("CPU Core #") == 0) {
+                int coreNumber = std::stoi(pair.first.substr(10)); // 眖㏕﹚竚耝计场だ
+                coreExists.set(coreNumber);
+            }
+        }
+
+        hw->cpuInfo->Cores = static_cast<int>(coreExists.count());
+        hw->cpuInfo->Threads = static_cast<int>(hw->cpuInfo->CoreLoad.size()); // 磅︽狐计秖钡ㄏノ CoreLoad 
     }
 
     void HandleGPU(IHardware^ hardware, HardwareInfo^ hw) {
@@ -98,7 +111,7 @@ namespace HardwareInfoDll {
         std::string hardwareName = msclr::interop::marshal_as<std::string>(hardware->Name);
 
         for each (ISensor ^ sensor in hardware->Sensors) {
-            
+
         }
     }
 

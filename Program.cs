@@ -14,9 +14,9 @@ namespace CPUInfoApp
             // 計時器
             hardwareInfo.StartSaveAllHardwareThread(50);
 
-            System.Threading.Thread.Sleep(1000);  // 暫停 1 秒
+            System.Threading.Thread.Sleep(600);  // 暫停 1 秒
 
-            var temp = hardwareInfo.GetGPUInfo();
+            var temp = hardwareInfo.GetCPUInfo();
 
             Console.WriteLine(temp);
 
