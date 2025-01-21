@@ -7,6 +7,9 @@
 #include <unordered_map>
 #include <msclr\marshal_cppstd.h>
 #include <bitset>
+#include <regex>
+#include <locale>
+#include <codecvt>
 
 #using "LibreHardwareMonitorLib.dll"
 using namespace System;
@@ -141,7 +144,7 @@ namespace HardwareInfoDll {
     void HandleStorage(IHardware^ hardware, HardwareInfo^ hw) {
         std::string hardwareName = msclr::interop::marshal_as<std::string>(hardware->Name);
 
-        auto &storageMap = *hw->storageInfo;
+        auto &storageMap = *hw->storageInfoMap;
         storageMap[hardwareName] = StorageInfo();
 
         auto sensors = hardware->Sensors;
@@ -167,13 +170,28 @@ namespace HardwareInfoDll {
     }
 
     void HandleNetwork(IHardware^ hardware, HardwareInfo^ hw) {
-        std::string hardwareName = msclr::interop::marshal_as<std::string>(hardware->Name);
+        std::wstring hardwareName = msclr::interop::marshal_as<std::wstring>(hardware->Name);
+
+        auto &networkMap = *hw->networkInfoMap;
+        networkMap[hardwareName] = NetworkInfo();
 
         auto sensors = hardware->Sensors;
         for (int i = 0; i < sensors->Length; ++i) {
             ISensor^ sensor = sensors[i];
             if (!sensor->Value.HasValue) continue;
 
+            std::string sensorName = msclr::interop::marshal_as<std::string>(sensor->Name);
+
+            if (sensorName == "Data Uploaded")
+                networkMap[hardwareName].dataUploaded = sensor->Value.Value;
+            else if (sensorName == "Data Downloaded")
+                networkMap[hardwareName].dataDownloaded = sensor->Value.Value;
+            else if (sensorName == "Upload Speed")
+                networkMap[hardwareName].uploadSpeed = sensor->Value.Value;
+            else if (sensorName == "Download Speed")
+                networkMap[hardwareName].downloadSpeed = sensor->Value.Value;
+            else if (sensorName == "Network utilization")
+                networkMap[hardwareName].networkUtilization = sensor->Value.Value;
         }
     }
 
@@ -246,6 +264,28 @@ namespace HardwareInfoDll {
                 //Console::WriteLine("Unknown hardware type: {0}", hardware->HardwareType.ToString());
             //}
         }
+    }
+
+    // 將 \uXXXX 格式的 Unicode 轉回對應字元
+    std::string DecodeUnicode(const std::string& input) {
+        std::string output = input;
+        const static std::regex unicodeRegex(R"(\\u([0-9a-fA-F]{4}))");
+        std::smatch match;
+
+        // 使用 regex 替換
+        while (std::regex_search(output, match, unicodeRegex)) {
+            // 將 \uXXXX 轉成對應的 wchar_t
+            wchar_t wchar = static_cast<wchar_t>(std::stoi(match[1].str(), nullptr, 16));
+
+            // 將 wchar_t 轉為 UTF-8 編碼的 std::string
+            std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+            std::string utf8Char = converter.to_bytes(wchar);
+
+            // 替換匹配的部分
+            output.replace(match.position(), match.length(), utf8Char);
+        }
+
+        return output;
     }
 
     void HardwareInfo::PrintAllHardware() {
@@ -355,7 +395,7 @@ namespace HardwareInfoDll {
         json result;
 
         // 直接在迴圈內處理儲存資訊
-        for (auto& storage : *storageInfo) {
+        for (auto& storage : *storageInfoMap) {
             json storageJson = {
                 { "UsedSpace", storage.second.usedSpace },
                 { "ReadActivity", storage.second.readActivity },
@@ -371,11 +411,41 @@ namespace HardwareInfoDll {
         return msclr::interop::marshal_as<System::String^>(result.dump(DUMP_JSON_INDENT));
     }
 
-    // 轉換 Network 資訊結構為 JSON 格式
+    // 轉換網路資訊結構為 JSON 格式
     System::String^ HardwareInfo::GetNetworkInfo() {
-        // 轉換為 JSON 格式
         json result;
-        // 將 JSON 資料轉換成 std::string，再轉成 System::String^
-        return msclr::interop::marshal_as<System::String^>(result.dump(DUMP_JSON_INDENT));
+
+        try {
+            for (auto& network : *networkInfoMap) {
+                // 使用 std::wstring_convert 轉換 std::wstring 為 std::string (UTF-8 編碼)
+                std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+                std::string networkKey = converter.to_bytes(network.first); // 將 std::wstring 轉換為 std::string
+
+                json networkJson = {
+                    { "DataUploaded", network.second.dataUploaded },
+                    { "DataDownloaded", network.second.dataDownloaded },
+                    { "UploadSpeed", network.second.uploadSpeed },
+                    { "DownloadSpeed", network.second.downloadSpeed },
+                    { "NetworkUtilization", network.second.networkUtilization }
+                };
+                result[networkKey] = std::move(networkJson);  // 使用 std::string 作為鍵
+                //Console::WriteLine(gcnew String(networkKey.c_str(), 0, networkKey.length(), System::Text::Encoding::UTF8));
+            }
+            
+            // 序列化為 JSON 字串 (含轉義符號的 UTF-8)
+            std::string jsonString = result.dump(DUMP_JSON_INDENT, ' ', true);
+
+            // 將 Unicode 轉義 (\uXXXX) 還原為中文
+            std::string decodedJson = DecodeUnicode(jsonString);
+            
+            //std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+            //std::wstring utf16String = converter.from_bytes(decodedJson);  // 將 UTF-8 轉換為 UTF-16，給 C# 使用
+
+            // 返回 C++/CLI 的 System::String^
+            return msclr::interop::marshal_as<System::String^>(decodedJson);
+        }
+        catch (const std::exception& e) {
+            return "Error during JSON serialization";
+        }
     }
 }

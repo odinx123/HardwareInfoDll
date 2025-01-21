@@ -8,7 +8,6 @@ namespace CPUInfoApp
     {
         static void Main(string[] args)
         {
-            // 建立 HardwareInfo 物件
             HardwareInfo hardwareInfo = new HardwareInfo();
 
             // 計時器
@@ -18,9 +17,14 @@ namespace CPUInfoApp
 
             //var temp = hardwareInfo.GetCPUInfo();
             //var temp = hardwareInfo.GetMemoryInfo();
-            var temp = hardwareInfo.GetStorageInfo();
+            //var temp = hardwareInfo.GetStorageInfo();
+            var utf8String = hardwareInfo.GetNetworkInfo();
+            //hardwareInfo.PrintAllHardware();
 
-            Console.WriteLine(temp);
+            byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(utf8String);
+            string utf16String = System.Text.Encoding.Unicode.GetString(utf8Bytes);
+
+            Console.WriteLine(utf8String);
 
             //hardwareInfo.PrintAllHardware();
 
