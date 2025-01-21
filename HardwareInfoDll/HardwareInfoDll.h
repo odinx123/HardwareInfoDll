@@ -55,6 +55,16 @@ namespace HardwareInfoDll {
         GpuSensorInfo(const std::string& type, float value) : Type(type), Value(value) {}
     };
 
+    struct MemoryInfo {
+        std::string name;  // hardware name
+        float memoryUsed = 0.0;  // 已使用記憶體
+        float memoryAvailable = 0.0;  // 可用記憶體
+        float memoryUtilization = 0.0;  // 記憶體使用率
+        float virtualMemoryUsed = 0.0;  // 已使用虛擬記憶體
+        float virtualMemoryAvailable = 0.0;  // 可用虛擬記憶體
+        float virtualMemoryUtilization = 0.0;  // 虛擬記憶體使用率
+    };
+
     struct NetworkInfo {
         std::string Name;
         double DownloadSpeed = 0.0;  // 下載速度
@@ -64,40 +74,43 @@ namespace HardwareInfoDll {
         double Utilization = 0.0;  // 網路使用率
     };
 
-	public ref class HardwareInfo {
-		Computer^ computer = gcnew Computer();
+    public ref class HardwareInfo {
+        Computer^ computer = gcnew Computer();
         int m_waitInterval;  // 用來儲存等待時間（毫秒）
         System::Threading::CancellationTokenSource^ m_cancellationTokenSource;  // 用來取消執行緒的 CancellationTokenSource
 
         // 定義硬體處理函數
         public:
-        CpuInfo* cpuInfo;
-        std::unordered_map<std::string, std::unordered_map<std::string, GpuSensorInfo>>* gpuInfoMap;
-        std::unordered_map <std::string, NetworkInfo>* networkInfoMap;
+        CpuInfo* cpuInfo;  // CPU 資訊
+        std::unordered_map<std::string, std::unordered_map<std::string, GpuSensorInfo>>* gpuInfoMap;  // GPU 資訊
+        MemoryInfo* memoryInfo;  // 記憶體資訊
+        std::unordered_map <std::string, NetworkInfo>* networkInfoMap;  // 網路資訊
 
-		// TODO: 請在此新增此類別的方法。
-		public:
-		HardwareInfo() {
-			this->computer->IsCpuEnabled = true;
-			this->computer->IsGpuEnabled = true;
-			this->computer->IsMemoryEnabled = true;
-			this->computer->IsMotherboardEnabled = true;
-			this->computer->IsNetworkEnabled = true;
-			this->computer->IsStorageEnabled = true;
+        // TODO: 請在此新增此類別的方法。
+        public:
+        HardwareInfo() {
+            this->computer->IsCpuEnabled = true;
+            this->computer->IsGpuEnabled = true;
+            this->computer->IsMemoryEnabled = true;
+            this->computer->IsMotherboardEnabled = true;
+            this->computer->IsNetworkEnabled = true;
+            this->computer->IsStorageEnabled = true;
             this->computer->IsPsuEnabled = true;
             this->computer->IsBatteryEnabled = true;
-			this->computer->Open();
+            this->computer->Open();
             this->computer->Accept(gcnew UpdateVisitor());
 
-            cpuInfo = new CpuInfo();
-            gpuInfoMap = new std::unordered_map<std::string, std::unordered_map<std::string, GpuSensorInfo>>();
-            networkInfoMap = new std::unordered_map<std::string, NetworkInfo>();
-		}
+            cpuInfo = new CpuInfo();  // 初始化 CPU 資訊
+            gpuInfoMap = new std::unordered_map<std::string, std::unordered_map<std::string, GpuSensorInfo>>();  // 初始化 GPU 資訊
+            memoryInfo = new MemoryInfo();  // 初始化記憶體資訊
+            networkInfoMap = new std::unordered_map<std::string, NetworkInfo>();  // 初始化網路資訊
+        }
         ~HardwareInfo() {
             this->computer->Close();
 
             delete cpuInfo;
             delete gpuInfoMap;
+            delete memoryInfo;
             delete networkInfoMap;
         }
 
@@ -112,5 +125,9 @@ namespace HardwareInfoDll {
         System::String^ GetCPUInfo();  // 獲取 CPU 資訊
 
         System::String^ GetGPUInfo();  // 獲取 GPU 資訊
-	};
+
+        System::String^ GetMemoryInfo();  // 獲取記憶體資訊
+
+        System::String^ GetNetworkInfo();  // 獲取網路資訊
+    };
 }

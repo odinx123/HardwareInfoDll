@@ -10,12 +10,12 @@
 
 #using "LibreHardwareMonitorLib.dll"
 using namespace System;
-using namespace System::Threading; // 引入 Thread 類
+using namespace System::Threading;
 using namespace LibreHardwareMonitor::Hardware;
 using json = nlohmann::json;
 
 #define MAX_CORE_NUM 64
-#define DUMP_JSON_INDENT 4
+#define DUMP_JSON_INDENT 4  // -1 表示不使用縮排
 
 namespace HardwareInfoDll {
     using HardwareHandler = void(*)(IHardware^, HardwareInfo^);
@@ -24,7 +24,9 @@ namespace HardwareInfoDll {
     void HandleCPU(IHardware^ hardware, HardwareInfo^ hw) {
         hw->cpuInfo->Name = msclr::interop::marshal_as<std::string>(hardware->Name);
 
-        for each (ISensor ^ sensor in hardware->Sensors) {
+        auto sensors = hardware->Sensors;
+        for (int i = 0; i < sensors->Length; ++i) {
+            ISensor^ sensor = sensors[i];
             auto sensorValue = sensor->Value;
             if (!sensorValue.HasValue) continue;
 
@@ -97,7 +99,9 @@ namespace HardwareInfoDll {
         // 確保硬體名稱在gpuMap中初始化
         auto& gpuSensors = gpuMap[hardwareName];
 
-        for each (ISensor ^ sensor in hardware->Sensors) {
+        auto sensors = hardware->Sensors;
+        for (int i = 0; i < sensors->Length; ++i) {
+            ISensor^ sensor = sensors[i];
             if (!sensor->Value.HasValue) continue;
 
             std::string sensorName = msclr::interop::marshal_as<std::string>(sensor->Name);
@@ -110,15 +114,37 @@ namespace HardwareInfoDll {
     void HandleMemory(IHardware^ hardware, HardwareInfo^ hw) {
         std::string hardwareName = msclr::interop::marshal_as<std::string>(hardware->Name);
 
-        for each (ISensor ^ sensor in hardware->Sensors) {
+        hw->memoryInfo->name = hardwareName;
 
+        auto sensors = hardware->Sensors;
+        for (int i = 0; i < sensors->Length; ++i) {
+            ISensor^ sensor = sensors[i];
+            if (!sensor->Value.HasValue) continue;
+
+            std::string sensorName = msclr::interop::marshal_as<std::string>(sensor->Name);
+
+            if (sensorName == "Memory Used")
+                hw->memoryInfo->memoryUsed = sensor->Value.Value;
+            else if (sensorName == "Memory Available")
+                hw->memoryInfo->memoryAvailable = sensor->Value.Value;
+            else if (sensorName == "Memory")
+                hw->memoryInfo->memoryUtilization = sensor->Value.Value;
+            else if (sensorName == "Virtual Memory Used")
+                hw->memoryInfo->virtualMemoryUsed = sensor->Value.Value;
+            else if (sensorName == "Virtual Memory Available")
+                hw->memoryInfo->virtualMemoryAvailable = sensor->Value.Value;
+            else if (sensorName == "Virtual Memory")
+                hw->memoryInfo->virtualMemoryUtilization = sensor->Value.Value;
         }
     }
 
     void HandleStorage(IHardware^ hardware, HardwareInfo^ hw) {
         std::string hardwareName = msclr::interop::marshal_as<std::string>(hardware->Name);
 
-        for each (ISensor ^ sensor in hardware->Sensors) {
+        auto sensors = hardware->Sensors;
+        for (int i = 0; i < sensors->Length; ++i) {
+            ISensor^ sensor = sensors[i];
+            if (!sensor->Value.HasValue) continue;
 
         }
     }
@@ -126,7 +152,10 @@ namespace HardwareInfoDll {
     void HandleNetwork(IHardware^ hardware, HardwareInfo^ hw) {
         std::string hardwareName = msclr::interop::marshal_as<std::string>(hardware->Name);
 
-        for each (ISensor ^ sensor in hardware->Sensors) {
+        auto sensors = hardware->Sensors;
+        for (int i = 0; i < sensors->Length; ++i) {
+            ISensor^ sensor = sensors[i];
+            if (!sensor->Value.HasValue) continue;
 
         }
     }
@@ -134,7 +163,10 @@ namespace HardwareInfoDll {
     void HandleBattery(IHardware^ hardware, HardwareInfo^ hw) {
         std::string hardwareName = msclr::interop::marshal_as<std::string>(hardware->Name);
 
-        for each (ISensor ^ sensor in hardware->Sensors) {
+        auto sensors = hardware->Sensors;
+        for (int i = 0; i < sensors->Length; ++i) {
+            ISensor^ sensor = sensors[i];
+            if (!sensor->Value.HasValue) continue;
 
         }
     }
@@ -210,7 +242,9 @@ namespace HardwareInfoDll {
             }
 
             // 遍歷所有傳感器
-            for each (ISensor ^ sensor in hardware->Sensors) {
+            auto sensors = hardware->Sensors;
+            for (int i = 0; i < sensors->Length; ++i) {
+                ISensor^ sensor = sensors[i];
                 auto sensorValue = sensor->Value;
                 if (!sensorValue.HasValue) continue;
 
@@ -282,5 +316,27 @@ namespace HardwareInfoDll {
         return msclr::interop::marshal_as<System::String^>(result.dump(DUMP_JSON_INDENT));
     }
 
+    // 轉換記憶體資訊結構為 JSON 格式
+    System::String^ HardwareInfo::GetMemoryInfo() {
+        // 轉換為 JSON 格式
+        json result = {
+            { "Name", memoryInfo->name },
+            { "MemoryUsed", memoryInfo->memoryUsed },
+            { "MemoryAvailable", memoryInfo->memoryAvailable },
+            { "MemoryUtilization", memoryInfo->memoryUtilization },
+            { "VirtualMemoryUsed", memoryInfo->virtualMemoryUsed },
+            { "VirtualMemoryAvailable", memoryInfo->virtualMemoryAvailable },
+            { "VirtualMemoryUtilization", memoryInfo->virtualMemoryUtilization }
+        };
+        // 直接將 JSON 資料轉換成 std::string，再轉成 System::String^
+        return msclr::interop::marshal_as<System::String^>(result.dump(DUMP_JSON_INDENT));
+    }
+
     // 轉換 Network 資訊結構為 JSON 格式
+    System::String^ HardwareInfo::GetNetworkInfo() {
+        // 轉換為 JSON 格式
+        json result;
+        // 將 JSON 資料轉換成 std::string，再轉成 System::String^
+        return msclr::interop::marshal_as<System::String^>(result.dump(DUMP_JSON_INDENT));
+    }
 }
