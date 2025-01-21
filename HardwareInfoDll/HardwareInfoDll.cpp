@@ -146,6 +146,7 @@ namespace HardwareInfoDll {
             ISensor^ sensor = sensors[i];
             if (!sensor->Value.HasValue) continue;
 
+
         }
     }
 
@@ -329,6 +330,14 @@ namespace HardwareInfoDll {
             { "VirtualMemoryUtilization", memoryInfo->virtualMemoryUtilization }
         };
         // 直接將 JSON 資料轉換成 std::string，再轉成 System::String^
+        return msclr::interop::marshal_as<System::String^>(result.dump(DUMP_JSON_INDENT));
+    }
+
+    // 轉換儲存資訊結構為 JSON 格式
+    System::String^ HardwareInfo::GetStorageInfo() {
+        // 轉換為 JSON 格式
+        json result;
+        // 將 JSON 資料轉換成 std::string，再轉成 System::String^
         return msclr::interop::marshal_as<System::String^>(result.dump(DUMP_JSON_INDENT));
     }
 
