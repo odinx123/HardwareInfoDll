@@ -141,12 +141,28 @@ namespace HardwareInfoDll {
     void HandleStorage(IHardware^ hardware, HardwareInfo^ hw) {
         std::string hardwareName = msclr::interop::marshal_as<std::string>(hardware->Name);
 
+        auto &storageMap = *hw->storageInfo;
+        storageMap[hardwareName] = StorageInfo();
+
         auto sensors = hardware->Sensors;
         for (int i = 0; i < sensors->Length; ++i) {
             ISensor^ sensor = sensors[i];
             if (!sensor->Value.HasValue) continue;
 
+            std::string sensorName = msclr::interop::marshal_as<std::string>(sensor->Name);
 
+            if (sensorName == "Used Space")
+                storageMap[hardwareName].usedSpace = sensor->Value.Value;
+            else if (sensorName == "Read Activity")
+                storageMap[hardwareName].readActivity = sensor->Value.Value;
+            else if (sensorName == "Write Activity")
+                storageMap[hardwareName].writeActivity = sensor->Value.Value;
+            else if (sensorName == "Total Activity")
+                storageMap[hardwareName].totalActivity = sensor->Value.Value;
+            else if (sensorName == "Read Rate")
+                storageMap[hardwareName].readRate = sensor->Value.Value;
+            else if (sensorName == "Write Rate")
+                storageMap[hardwareName].writeRate = sensor->Value.Value;
         }
     }
 
@@ -337,6 +353,20 @@ namespace HardwareInfoDll {
     System::String^ HardwareInfo::GetStorageInfo() {
         // 轉換為 JSON 格式
         json result;
+
+        // 直接在迴圈內處理儲存資訊
+        for (auto& storage : *storageInfo) {
+            json storageJson = {
+                { "UsedSpace", storage.second.usedSpace },
+                { "ReadActivity", storage.second.readActivity },
+                { "WriteActivity", storage.second.writeActivity },
+                { "TotalActivity", storage.second.totalActivity },
+                { "ReadRate", storage.second.readRate },
+                { "WriteRate", storage.second.writeRate }
+            };
+            result[storage.first] = std::move(storageJson);
+        }
+
         // 將 JSON 資料轉換成 std::string，再轉成 System::String^
         return msclr::interop::marshal_as<System::String^>(result.dump(DUMP_JSON_INDENT));
     }

@@ -17,7 +17,8 @@ namespace CPUInfoApp
             System.Threading.Thread.Sleep(600);  // 暫停 1 秒
 
             //var temp = hardwareInfo.GetCPUInfo();
-            var temp = hardwareInfo.GetMemoryInfo();
+            //var temp = hardwareInfo.GetMemoryInfo();
+            var temp = hardwareInfo.GetStorageInfo();
 
             Console.WriteLine(temp);
 

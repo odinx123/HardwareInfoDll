@@ -102,7 +102,7 @@ namespace HardwareInfoDll {
         CpuInfo* cpuInfo;  // CPU 資訊
         std::unordered_map<std::string, std::unordered_map<std::string, GpuSensorInfo>>* gpuInfoMap;  // GPU 資訊
         MemoryInfo* memoryInfo;  // 記憶體資訊
-        StorageInfo* storageInfo;  // 儲存資訊
+        std::unordered_map<std::string, StorageInfo>* storageInfo;  // 儲存資訊
         std::unordered_map <std::string, NetworkInfo>* networkInfoMap;  // 網路資訊
 
         // TODO: 請在此新增此類別的方法。
@@ -122,7 +122,7 @@ namespace HardwareInfoDll {
             cpuInfo = new CpuInfo();  // 初始化 CPU 資訊
             gpuInfoMap = new std::unordered_map<std::string, std::unordered_map<std::string, GpuSensorInfo>>();  // 初始化 GPU 資訊
             memoryInfo = new MemoryInfo();  // 初始化記憶體資訊
-            storageInfo = new StorageInfo();  // 初始化儲存資訊
+            storageInfo = new std::unordered_map<std::string, StorageInfo>;  // 初始化儲存資訊
             networkInfoMap = new std::unordered_map<std::string, NetworkInfo>();  // 初始化網路資訊
         }
         ~HardwareInfo() {
