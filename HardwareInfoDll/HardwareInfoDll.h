@@ -101,11 +101,11 @@ namespace HardwareInfoDll {
             this->computer->IsCpuEnabled = true;
             this->computer->IsGpuEnabled = true;
             this->computer->IsMemoryEnabled = true;
-            this->computer->IsMotherboardEnabled = true;
+            //this->computer->IsMotherboardEnabled = true;
             this->computer->IsNetworkEnabled = true;
             this->computer->IsStorageEnabled = true;
-            this->computer->IsPsuEnabled = true;
-            this->computer->IsBatteryEnabled = true;
+            //this->computer->IsPsuEnabled = true;
+            //this->computer->IsBatteryEnabled = true;
             this->computer->Open();
             this->computer->Accept(gcnew UpdateVisitor());
 

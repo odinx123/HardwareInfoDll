@@ -11,56 +11,53 @@ namespace CPUInfoApp
             HardwareInfo hardwareInfo = new HardwareInfo();
 
             // 計時器
-            hardwareInfo.StartSaveAllHardwareThread(50);
+            hardwareInfo.StartSaveAllHardwareThread(1000);
 
-            System.Threading.Thread.Sleep(600);  // 暫停 1 秒
+            //System.Threading.Thread.Sleep(600);  // 暫停 1 秒
 
             //var temp = hardwareInfo.GetCPUInfo();
             //var temp = hardwareInfo.GetMemoryInfo();
             //var temp = hardwareInfo.GetStorageInfo();
-            var utf8String = hardwareInfo.GetNetworkInfo();
-            //hardwareInfo.PrintAllHardware();
+            //var temp = hardwareInfo.GetNetworkInfo();
 
-            byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(utf8String);
-            string utf16String = System.Text.Encoding.Unicode.GetString(utf8Bytes);
-
-            Console.WriteLine(utf8String);
+            //Console.WriteLine(temp);
 
             //hardwareInfo.PrintAllHardware();
 
             //// 開始計時
-            //long cnt = 0;
-            //long testnum = 100;
-            //string previousCpuInfo = "";
-            //int changeCount = 0;  // 記錄 CPU Info 改變的次數
+            long cnt = 0;
+            long testnum = 100;
+            string previousCpuInfo = "";
+            int changeCount = 0;  // 記錄 CPU Info 改變的次數
 
-            //for (int i = 0; i < testnum; i++)
-            //{
-            //    System.Threading.Thread.Sleep(100);  // 暫停 100 毫秒
+            for (int i = 0; i < testnum; i++)
+            {
+                System.Threading.Thread.Sleep(100);  // 暫停 100 毫秒
 
-            //    Stopwatch stopwatch = Stopwatch.StartNew();
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
-            //    // 獲取 CPU 資訊
-            //    string cpuInfo = hardwareInfo.GetCPUInfo();
+                // 獲取 CPU 資訊
+                //hardwareInfo.SaveAllHardware();
+                string cpuInfo = hardwareInfo.GetCPUInfo();
 
-            //    stopwatch.Stop();
+                stopwatch.Stop();
 
-            //    // 比較 cpuInfo 是否改變
-            //    if (cpuInfo != previousCpuInfo)
-            //    {
-            //        changeCount++;  // 記錄變化
-            //        previousCpuInfo = cpuInfo;  // 更新上一個 CPU Info
-            //    }
+                // 比較 cpuInfo 是否改變
+                if (cpuInfo != previousCpuInfo)
+                {
+                    changeCount++;  // 記錄變化
+                    previousCpuInfo = cpuInfo;  // 更新上一個 CPU Info
+                }
 
-            //    cnt += stopwatch.ElapsedMilliseconds * 1000; // 轉換為微秒
-            //}
+                cnt += stopwatch.ElapsedMilliseconds * 1000; // 轉換為微秒
+            }
 
             //// 顯示變化次數
-            //Console.WriteLine("CPU Info changed " + changeCount + " times.");
+            Console.WriteLine("CPU Info changed " + changeCount + " times.");
 
             //// 顯示平均執行時間
-            //double avgTime = (double)cnt / testnum;
-            //Console.WriteLine("Average Execution Time: " + avgTime.ToString("F2") + " µs");
+            double avgTime = (double)cnt / testnum;
+            Console.WriteLine("Average Execution Time: " + avgTime.ToString("F2") + " µs");
         }
     }
 }

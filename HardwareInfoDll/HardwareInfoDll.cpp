@@ -10,6 +10,8 @@
 #include <regex>
 #include <locale>
 #include <codecvt>
+#include <chrono>
+#include <thread>
 
 #using "LibreHardwareMonitorLib.dll"
 using namespace System;
@@ -18,7 +20,7 @@ using namespace LibreHardwareMonitor::Hardware;
 using json = nlohmann::json;
 
 #define MAX_CORE_NUM 64
-#define DUMP_JSON_INDENT 4  // -1 表示不使用縮排
+#define DUMP_JSON_INDENT -1  // -1 表示不使用縮排
 
 namespace HardwareInfoDll {
     using HardwareHandler = void(*)(IHardware^, HardwareInfo^);
@@ -214,8 +216,8 @@ namespace HardwareInfoDll {
         { (size_t)HardwareType::GpuIntel, &HandleGPU },
         { (size_t)HardwareType::Memory, &HandleMemory },
         { (size_t)HardwareType::Storage, &HandleStorage },
-        { (size_t)HardwareType::Network, &HandleNetwork },
-        { (size_t)HardwareType::Battery, &HandleBattery }
+        { (size_t)HardwareType::Network, &HandleNetwork }
+        //{ (size_t)HardwareType::Battery, &HandleBattery }  // 電池硬體暫時不處理
     };
 
     // 啟動執行緒來保存硬體資訊
@@ -236,8 +238,28 @@ namespace HardwareInfoDll {
 
         try {
             while (!token.IsCancellationRequested) {
+                auto startTime = std::chrono::steady_clock::now();  // 記錄開始時間
+
                 this->SaveAllHardware();  // 保存所有硬體資訊
-                Thread::Sleep(this->m_waitInterval);  // 使用設定的等待時間
+
+                auto endTime = std::chrono::steady_clock::now();  // 記錄結束時間
+                auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();  // 計算執行時間
+
+                // 計算剩餘的等待時間
+                auto remainingTime = this->m_waitInterval - executionTime;
+
+                // 如果剩餘的時間大於0，則睡眠指定的剩餘時間
+                if (remainingTime > 0) {
+                    // 判斷剩餘時間是否過短，不足以進行上下文切換
+                    if (remainingTime < 10) {
+                        // 如果剩餘時間太短，則不進行上下文切換，直接繼續下一輪
+                        continue;
+                    }
+                    else {
+                        // 等待剩餘的時間
+                        std::this_thread::sleep_for(std::chrono::milliseconds(remainingTime));
+                    }
+                }
             }
         }
         catch (Exception^ ex) {
@@ -264,28 +286,6 @@ namespace HardwareInfoDll {
                 //Console::WriteLine("Unknown hardware type: {0}", hardware->HardwareType.ToString());
             //}
         }
-    }
-
-    // 將 \uXXXX 格式的 Unicode 轉回對應字元
-    std::string DecodeUnicode(const std::string& input) {
-        std::string output = input;
-        const static std::regex unicodeRegex(R"(\\u([0-9a-fA-F]{4}))");
-        std::smatch match;
-
-        // 使用 regex 替換
-        while (std::regex_search(output, match, unicodeRegex)) {
-            // 將 \uXXXX 轉成對應的 wchar_t
-            wchar_t wchar = static_cast<wchar_t>(std::stoi(match[1].str(), nullptr, 16));
-
-            // 將 wchar_t 轉為 UTF-8 編碼的 std::string
-            std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-            std::string utf8Char = converter.to_bytes(wchar);
-
-            // 替換匹配的部分
-            output.replace(match.position(), match.length(), utf8Char);
-        }
-
-        return output;
     }
 
     void HardwareInfo::PrintAllHardware() {
@@ -435,14 +435,8 @@ namespace HardwareInfoDll {
             // 序列化為 JSON 字串 (含轉義符號的 UTF-8)
             std::string jsonString = result.dump(DUMP_JSON_INDENT, ' ', true);
 
-            // 將 Unicode 轉義 (\uXXXX) 還原為中文
-            std::string decodedJson = DecodeUnicode(jsonString);
-            
-            //std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-            //std::wstring utf16String = converter.from_bytes(decodedJson);  // 將 UTF-8 轉換為 UTF-16，給 C# 使用
-
             // 返回 C++/CLI 的 System::String^
-            return msclr::interop::marshal_as<System::String^>(decodedJson);
+            return msclr::interop::marshal_as<System::String^>(jsonString);
         }
         catch (const std::exception& e) {
             return "Error during JSON serialization";
