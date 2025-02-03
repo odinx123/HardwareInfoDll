@@ -222,58 +222,6 @@ namespace HardwareInfoDll {
         //{ (size_t)HardwareType::Battery, &HandleBattery }  // 電池硬體暫時不處理
     };
 
-    // 啟動執行緒來保存硬體資訊
-    void HardwareInfo::StartSaveAllHardwareThread(int intervalInMilliseconds) {
-        // 設定等待時間並啟動執行緒
-        this->m_waitInterval = intervalInMilliseconds;
-
-        // 使用 CancellationToken 來允許優雅的停止執行緒
-        //m_cancellationTokenSource = gcnew System::Threading::CancellationTokenSource();
-        Task::Run(gcnew Action(this, &HardwareInfo::SaveAllHardware));
-        //Thread^ thread = gcnew Thread(gcnew ParameterizedThreadStart(this, &HardwareInfo::SaveAllHardwareLoop));
-        //thread->IsBackground = true;  // 設定為背景執行緒，應用程式結束時會自動結束
-        //thread->Start(m_cancellationTokenSource->Token);  // 傳遞取消標記
-    }
-
-    // 保存硬體資訊的執行緒循環
-    void HardwareInfo::SaveAllHardwareLoop(Object^ tokenObj) {
-        auto token = (System::Threading::CancellationToken)tokenObj;
-
-        try {
-            while (!token.IsCancellationRequested) {
-                auto startTime = std::chrono::steady_clock::now();  // 記錄開始時間
-
-                this->SaveAllHardware();  // 保存所有硬體資訊
-
-                auto endTime = std::chrono::steady_clock::now();  // 記錄結束時間
-                auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();  // 計算執行時間
-
-                // 計算剩餘的等待時間
-                auto remainingTime = this->m_waitInterval - executionTime;
-
-                // 如果剩餘的時間大於0，則睡眠指定的剩餘時間
-                if (remainingTime > 0) {
-                    // 判斷剩餘時間是否過短，不足以進行上下文切換
-                    if (remainingTime < 10) {
-                        // 如果剩餘時間太短，則不進行上下文切換，直接繼續下一輪
-                        continue;
-                    }
-                    else {
-                        // 等待剩餘的時間
-                        //std::this_thread::sleep_for(std::chrono::milliseconds(remainingTime));
-                        Task::Delay(remainingTime, token)->Wait();
-                    }
-                }
-            }
-        }
-        catch (Exception^ ex) {
-            // 發送取消請求來停止執行緒
-            if (!token.IsCancellationRequested) {
-                m_cancellationTokenSource->Cancel();  // 停止執行緒
-            }
-        }
-    }
-
     // C++/CLI 異步更新實作
     void HardwareInfo::SaveAllHardware() {
         // 主線程處理 CPU/Memory/Storage/Network
@@ -292,17 +240,19 @@ namespace HardwareInfoDll {
     }
 
     void HardwareInfo::UpdateGpuData() {
-        for (int i = 0; i < this->computer->Hardware->Count; i++) {
-            IHardware^ hardware = this->computer->Hardware[i];
-            if (hardware->HardwareType == HardwareType::GpuNvidia ||
-                hardware->HardwareType == HardwareType::GpuAmd ||
-                hardware->HardwareType == HardwareType::GpuIntel) {
-                hardware->Update();
-                hardwareHandlers[(size_t)hardware->HardwareType](hardware, this);
+        if (gpuUpdateMutex->WaitOne(0)) {
+            for (int i = 0; i < this->computer->Hardware->Count; i++) {
+                IHardware^ hardware = this->computer->Hardware[i];
+                if (hardware->HardwareType == HardwareType::GpuNvidia ||
+                    hardware->HardwareType == HardwareType::GpuAmd ||
+                    hardware->HardwareType == HardwareType::GpuIntel) {
+                    hardware->Update();
+                    hardwareHandlers[(size_t)hardware->HardwareType](hardware, this);
+                }
             }
+            gpuUpdateMutex->ReleaseMutex();  // 釋放鎖
         }
     }
-
 
     void HardwareInfo::PrintAllHardware() {
         // 遍歷所有硬體

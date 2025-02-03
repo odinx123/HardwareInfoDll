@@ -83,8 +83,7 @@ namespace HardwareInfoDll {
 
     public ref class HardwareInfo {
         Computer^ computer = gcnew Computer();
-        int m_waitInterval;  // 用來儲存等待時間（毫秒）
-        System::Threading::CancellationTokenSource^ m_cancellationTokenSource;  // 用來取消執行緒的 CancellationTokenSource
+        System::Threading::Mutex^ gpuUpdateMutex = gcnew System::Threading::Mutex();  // Mutex 用來避免重入
 
         // 定義硬體處理函數
         public:
@@ -106,7 +105,7 @@ namespace HardwareInfoDll {
             //this->computer->IsPsuEnabled = true;
             //this->computer->IsBatteryEnabled = true;
             this->computer->Open();
-            //this->computer->Accept(gcnew UpdateVisitor());
+            this->computer->Accept(gcnew UpdateVisitor());
 
             cpuInfo = new CpuInfo();  // 初始化 CPU 資訊
             gpuInfoMap = new std::unordered_map<std::string, std::unordered_map<std::string, GpuSensorInfo>>();  // 初始化 GPU 資訊
@@ -123,10 +122,6 @@ namespace HardwareInfoDll {
             delete storageInfoMap;
             delete networkInfoMap;
         }
-
-        void StartSaveAllHardwareThread(int intervalInMilliseconds);  // 開始保存所有硬體資訊的執行緒
-
-        void SaveAllHardwareLoop(Object^ tokenObj);  // 保存所有硬體資訊的循環
 
         void PrintAllHardware();  // 保存所有硬體資訊
 
