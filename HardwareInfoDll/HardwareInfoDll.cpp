@@ -12,10 +12,13 @@
 #include <codecvt>
 #include <chrono>
 #include <thread>
+#include <future>
 
 #using "LibreHardwareMonitorLib.dll"
 using namespace System;
 using namespace System::Threading;
+using namespace System::Threading::Tasks;
+using namespace System::Collections::Generic;
 using namespace LibreHardwareMonitor::Hardware;
 using json = nlohmann::json;
 
@@ -101,7 +104,6 @@ namespace HardwareInfoDll {
 
         std::string hardwareName = msclr::interop::marshal_as<std::string>(hardware->Name);
 
-        // 確保硬體名稱在gpuMap中初始化
         auto& gpuSensors = gpuMap[hardwareName];
 
         auto sensors = hardware->Sensors;
@@ -146,7 +148,7 @@ namespace HardwareInfoDll {
     void HandleStorage(IHardware^ hardware, HardwareInfo^ hw) {
         std::string hardwareName = msclr::interop::marshal_as<std::string>(hardware->Name);
 
-        auto &storageMap = *hw->storageInfoMap;
+        auto& storageMap = *hw->storageInfoMap;
         storageMap[hardwareName] = StorageInfo();
 
         auto sensors = hardware->Sensors;
@@ -174,7 +176,7 @@ namespace HardwareInfoDll {
     void HandleNetwork(IHardware^ hardware, HardwareInfo^ hw) {
         std::wstring hardwareName = msclr::interop::marshal_as<std::wstring>(hardware->Name);
 
-        auto &networkMap = *hw->networkInfoMap;
+        auto& networkMap = *hw->networkInfoMap;
         networkMap[hardwareName] = NetworkInfo();
 
         auto sensors = hardware->Sensors;
@@ -226,10 +228,11 @@ namespace HardwareInfoDll {
         this->m_waitInterval = intervalInMilliseconds;
 
         // 使用 CancellationToken 來允許優雅的停止執行緒
-        m_cancellationTokenSource = gcnew System::Threading::CancellationTokenSource();
-        Thread^ thread = gcnew Thread(gcnew ParameterizedThreadStart(this, &HardwareInfo::SaveAllHardwareLoop));
-        thread->IsBackground = true;  // 設定為背景執行緒，應用程式結束時會自動結束
-        thread->Start(m_cancellationTokenSource->Token);  // 傳遞取消標記
+        //m_cancellationTokenSource = gcnew System::Threading::CancellationTokenSource();
+        Task::Run(gcnew Action(this, &HardwareInfo::SaveAllHardware));
+        //Thread^ thread = gcnew Thread(gcnew ParameterizedThreadStart(this, &HardwareInfo::SaveAllHardwareLoop));
+        //thread->IsBackground = true;  // 設定為背景執行緒，應用程式結束時會自動結束
+        //thread->Start(m_cancellationTokenSource->Token);  // 傳遞取消標記
     }
 
     // 保存硬體資訊的執行緒循環
@@ -257,7 +260,8 @@ namespace HardwareInfoDll {
                     }
                     else {
                         // 等待剩餘的時間
-                        std::this_thread::sleep_for(std::chrono::milliseconds(remainingTime));
+                        //std::this_thread::sleep_for(std::chrono::milliseconds(remainingTime));
+                        Task::Delay(remainingTime, token)->Wait();
                     }
                 }
             }
@@ -270,33 +274,41 @@ namespace HardwareInfoDll {
         }
     }
 
+    // C++/CLI 異步更新實作
     void HardwareInfo::SaveAllHardware() {
-        // 遍歷所有硬體
+        // 主線程處理 CPU/Memory/Storage/Network
         for (int i = 0; i < this->computer->Hardware->Count; i++) {
             IHardware^ hardware = this->computer->Hardware[i];
-            hardware->Update();
-
-            for each (IHardware ^ subHardware in hardware->SubHardware) {
-                subHardware->Update();
+            if (hardware->HardwareType != HardwareType::GpuNvidia &&
+                hardware->HardwareType != HardwareType::GpuAmd &&
+                hardware->HardwareType != HardwareType::GpuIntel) {
+                hardware->Update();
+                hardwareHandlers[(size_t)hardware->HardwareType](hardware, this);
             }
+        }
 
-            if (hardwareHandlers.find((size_t)hardware->HardwareType) != hardwareHandlers.end())  // 如果硬體類型存在於映射中
-                hardwareHandlers[(size_t)hardware->HardwareType](hardware, this);  // 呼叫對應的處理函數
-            //else {
-                //Console::WriteLine("Unknown hardware type: {0}", hardware->HardwareType.ToString());
-            //}
+        // 使用 Task 處理 GPU 更新（非阻塞）
+        Task::Run(gcnew Action(this, &HardwareInfo::UpdateGpuData));
+    }
+
+    void HardwareInfo::UpdateGpuData() {
+        for (int i = 0; i < this->computer->Hardware->Count; i++) {
+            IHardware^ hardware = this->computer->Hardware[i];
+            if (hardware->HardwareType == HardwareType::GpuNvidia ||
+                hardware->HardwareType == HardwareType::GpuAmd ||
+                hardware->HardwareType == HardwareType::GpuIntel) {
+                hardware->Update();
+                hardwareHandlers[(size_t)hardware->HardwareType](hardware, this);
+            }
         }
     }
+
 
     void HardwareInfo::PrintAllHardware() {
         // 遍歷所有硬體
         for (int i = 0; i < this->computer->Hardware->Count; i++) {
             IHardware^ hardware = this->computer->Hardware[i];
             hardware->Update();
-
-            for each (IHardware ^ subHardware in hardware->SubHardware) {
-                subHardware->Update();
-            }
 
             // 遍歷所有傳感器
             auto sensors = hardware->Sensors;
@@ -431,7 +443,7 @@ namespace HardwareInfoDll {
                 result[networkKey] = std::move(networkJson);  // 使用 std::string 作為鍵
                 //Console::WriteLine(gcnew String(networkKey.c_str(), 0, networkKey.length(), System::Text::Encoding::UTF8));
             }
-            
+
             // 序列化為 JSON 字串 (含轉義符號的 UTF-8)
             std::string jsonString = result.dump(DUMP_JSON_INDENT, ' ', true);
 

@@ -11,7 +11,7 @@ namespace CPUInfoApp
             HardwareInfo hardwareInfo = new HardwareInfo();
 
             // 計時器
-            hardwareInfo.StartSaveAllHardwareThread(1000);
+            //hardwareInfo.StartSaveAllHardwareThread(1000);
 
             //System.Threading.Thread.Sleep(600);  // 暫停 1 秒
 
@@ -37,8 +37,8 @@ namespace CPUInfoApp
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
                 // 獲取 CPU 資訊
-                //hardwareInfo.SaveAllHardware();
-                string cpuInfo = hardwareInfo.GetCPUInfo();
+                hardwareInfo.SaveAllHardware();
+                string cpuInfo = hardwareInfo.GetGPUInfo();
 
                 stopwatch.Stop();
 

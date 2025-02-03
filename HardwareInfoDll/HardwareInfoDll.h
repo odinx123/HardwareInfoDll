@@ -26,7 +26,6 @@ namespace HardwareInfoDll {
         virtual void VisitParameter(LibreHardwareMonitor::Hardware::IParameter^ parameter) {}
     };
 
-
     // 定義 CPU 資訊結構
     struct CpuInfo {
         std::string Name;
@@ -107,7 +106,7 @@ namespace HardwareInfoDll {
             //this->computer->IsPsuEnabled = true;
             //this->computer->IsBatteryEnabled = true;
             this->computer->Open();
-            this->computer->Accept(gcnew UpdateVisitor());
+            //this->computer->Accept(gcnew UpdateVisitor());
 
             cpuInfo = new CpuInfo();  // 初始化 CPU 資訊
             gpuInfoMap = new std::unordered_map<std::string, std::unordered_map<std::string, GpuSensorInfo>>();  // 初始化 GPU 資訊
@@ -132,6 +131,8 @@ namespace HardwareInfoDll {
         void PrintAllHardware();  // 保存所有硬體資訊
 
         void SaveAllHardware();  // 保存所有硬體資訊
+
+        void UpdateGpuData();  // 更新 GPU 資訊
 
         System::String^ GetCPUInfo();  // 獲取 CPU 資訊
 
